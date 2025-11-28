@@ -1,0 +1,21 @@
+datasource db {
+  provider = "sqlite"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Property {
+  id          String   @id @default(cuid())
+  city        String
+  street      String
+  state       String
+  zipCode     String
+  weatherData Json
+  lat         Float
+  long        Float
+  createdAt   DateTime @default(now())
+  
+  @@unique([street, city, state, zipCode])
+}

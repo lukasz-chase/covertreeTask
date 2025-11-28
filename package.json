@@ -1,0 +1,28 @@
+{
+  "name": "covertree-task",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@prisma/adapter-better-sqlite3": "^7.0.1",
+    "apollo-server": "^3.12.0",
+    "axios": "^1.7.0",
+    "better-sqlite3": "^12.4.6",
+    "dotenv": "^16.6.1",
+    "graphql": "^16.9.0",
+    "graphql-scalars": "^1.22.5",
+    "graphql-type-json": "^0.3.2"
+  },
+  "devDependencies": {
+    "@prisma/client": "^7.0.1",
+    "@types/better-sqlite3": "^7.6.13",
+    "prisma": "^7.0.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.6.0"
+  }
+}
