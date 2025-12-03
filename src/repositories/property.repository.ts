@@ -18,6 +18,11 @@ export type CreatePropertyData = {
   weatherData: Prisma.InputJsonValue;
 };
 
+/**
+ * Builds a Prisma `where` clause from a property filter object.
+ * @param filter - The filter object containing criteria like city, state, or zipCode.
+ * @returns A `Prisma.PropertyWhereInput` object for use in Prisma queries.
+ */
 const buildWhereClause = (
   filter?: PropertyFilter
 ): Prisma.PropertyWhereInput => {
@@ -40,10 +45,21 @@ const buildWhereClause = (
   return where;
 };
 
+/**
+ * Maps the custom `SortOrder` type to Prisma's `Prisma.SortOrder` type.
+ * @param sortOrder - The sort order to map ('ASC' or 'DESC').
+ * @returns The corresponding Prisma sort order ('asc' or 'desc').
+ */
 const mapSortOrder = (sortOrder: SortOrder): Prisma.SortOrder => {
   return sortOrder === "ASC" ? "asc" : "desc";
 };
 
+/**
+ * Finds and returns a list of properties based on specified filters and sorting.
+ * @param prisma - The PrismaClient instance.
+ * @param args - An object containing optional filter and sortOrder.
+ * @returns A promise that resolves to an array of `Property` objects.
+ */
 export const findProperties = async (
   prisma: PrismaClient,
   args: {
@@ -62,6 +78,12 @@ export const findProperties = async (
   });
 };
 
+/**
+ * Finds a single property by its unique ID.
+ * @param prisma - The PrismaClient instance.
+ * @param id - The unique identifier of the property.
+ * @returns A promise that resolves to the `Property` object or `null` if not found.
+ */
 export const findPropertyById = async (
   prisma: PrismaClient,
   id: string
@@ -71,6 +93,13 @@ export const findPropertyById = async (
   });
 };
 
+/**
+ * Creates a new property in the database.
+ * Handles unique constraint violations by returning null.
+ * @param prisma - The PrismaClient instance.
+ * @param data - The data for the new property.
+ * @returns A promise that resolves to the created `Property` object, or `null` if a property with the same address already exists.
+ */
 export const createProperty = async (
   prisma: PrismaClient,
   data: CreatePropertyData
@@ -92,6 +121,13 @@ export const createProperty = async (
   }
 };
 
+/**
+ * Deletes a property from the database by its unique ID.
+ * @param prisma - The PrismaClient instance.
+ * @param id - The unique identifier of the property to delete.
+ * @returns A promise that resolves to `true` if the deletion was successful,
+ * or `false` if the property was not found.
+ */
 export const deletePropertyById = async (
   prisma: PrismaClient,
   id: string

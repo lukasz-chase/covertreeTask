@@ -46,7 +46,17 @@ type WeatherstackError = {
   info: string;
 };
 
+/**
+ * Creates a client for interacting with the Weatherstack API.
+ * @param apiKey - The API key for authenticating with the Weatherstack service.
+ * @returns An object with methods to interact with the Weatherstack API.
+ */
 export const createWeatherstackClient = (apiKey: string) => {
+  /**
+   * Fetches the current weather for a given address.
+   * @param address - The address to get weather information for.
+   * @returns A promise that resolves with the weather data from the API.
+   */
   const getCurrentWeather = async (
     address: AddressInput
   ): Promise<WeatherstackResponse> => {
@@ -69,6 +79,12 @@ export const createWeatherstackClient = (apiKey: string) => {
     return response.data;
   };
 
+  /**
+   * Extracts and converts latitude and longitude from a location object to numbers.
+   * @param location - The location object from a Weatherstack API response.
+   * @returns An object containing the latitude and longitude as numbers.
+   * @throws {Error} if the latitude or longitude values are not valid numbers.
+   */
   const extractLatLong = (location: WeatherstackLocation) => {
     const lat = Number(location.lat);
     const long = Number(location.lon);
