@@ -45,14 +45,23 @@ describe("Property Repository", () => {
     });
 
     it("returns all properties if no filter is provided", async () => {
-      mockPrisma.property.findMany.mockResolvedValue([]);
+      const fake = {
+        id: "1",
+        city: "NY",
+      };
+      mockPrisma.property.findMany.mockResolvedValue([
+        fake,
+        { ...fake, id: 2 },
+      ]);
 
-      await findProperties(mockPrisma, {});
+      const properties = await findProperties(mockPrisma, {});
 
       expect(mockPrisma.property.findMany).toHaveBeenCalledWith({
         where: {},
         orderBy: { createdAt: "desc" },
       });
+
+      expect(properties.length).toBe(2);
     });
   });
 
