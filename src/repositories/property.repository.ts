@@ -1,22 +1,10 @@
-import { Prisma, PrismaClient, Property } from "@prisma/client";
-
-export type PropertyFilter = {
-  city?: string | null;
-  state?: string | null;
-  zipCode?: string | null;
-};
-
-export type SortOrder = "ASC" | "DESC";
-
-export type CreatePropertyData = {
-  city: string;
-  street: string;
-  state: string;
-  zipCode: string;
-  lat: number;
-  long: number;
-  weatherData: Prisma.InputJsonValue;
-};
+import { Prisma, PrismaClient } from "@prisma/client";
+import {
+  CreatePropertyData,
+  PropertyEntity,
+  PropertyFilter,
+  SortOrder,
+} from "../db/types";
 
 /**
  * Builds a Prisma `where` clause from a property filter object.
@@ -66,7 +54,7 @@ export const findProperties = async (
     filter?: PropertyFilter;
     sortOrder?: SortOrder;
   }
-): Promise<Property[]> => {
+): Promise<PropertyEntity[]> => {
   const { filter, sortOrder = "DESC" } = args;
   const where = buildWhereClause(filter);
 
@@ -87,7 +75,7 @@ export const findProperties = async (
 export const findPropertyById = async (
   prisma: PrismaClient,
   id: string
-): Promise<Property | null> => {
+): Promise<PropertyEntity | null> => {
   return prisma.property.findUnique({
     where: { id },
   });
@@ -103,7 +91,7 @@ export const findPropertyById = async (
 export const createProperty = async (
   prisma: PrismaClient,
   data: CreatePropertyData
-): Promise<Property | null> => {
+): Promise<PropertyEntity | null> => {
   try {
     const property = await prisma.property.create({
       data,

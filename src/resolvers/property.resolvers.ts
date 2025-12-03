@@ -9,21 +9,18 @@ import {
   findPropertyById,
   createProperty as createPropertyRecord,
   deletePropertyById,
-  PropertyFilter,
-  SortOrder,
 } from "../repositories/property.repository";
+import { Resolvers } from "../generated/schema";
 
 export type GraphQLContext = {
   prisma: typeof prisma;
   weatherstackClient: WeatherstackClient;
 };
 
-type PropertyFilterInput = PropertyFilter;
-
 /**
  * A map of resolver functions for the Property-related parts of the GraphQL schema.
  */
-export const propertyResolvers = {
+export const propertyResolvers: Resolvers = {
   DateTime: DateTimeResolver,
   JSON: GraphQLJSON,
 
@@ -35,19 +32,22 @@ export const propertyResolvers = {
      * @param context - The GraphQL context containing the Prisma client.
      * @returns A promise that resolves to an array of properties.
      */
-    properties: async (
-      _: unknown,
-      args: {
-        filter?: PropertyFilterInput;
-        sortBy?: "CREATED_AT";
-        sortOrder?: SortOrder;
-      },
-      context: GraphQLContext
-    ): Promise<Property[]> => {
+    properties: async (_, args, context) => {
       const { prisma: prismaClient } = context;
-      const { filter, sortOrder = "DESC" } = args;
+      const { filter: inputFilter, sortOrder = "DESC" } = args;
 
-      return findProperties(prismaClient, { filter, sortOrder });
+      const dbFilter = inputFilter
+        ? {
+            city: inputFilter.city ?? undefined,
+            state: inputFilter.state ?? undefined,
+            zipCode: inputFilter.zipCode ?? undefined,
+          }
+        : undefined;
+
+      return findProperties(prismaClient, {
+        filter: dbFilter,
+        sortOrder,
+      });
     },
 
     /**
@@ -58,11 +58,7 @@ export const propertyResolvers = {
      * @returns A promise that resolves to the found property.
      * @throws {GraphQLError} If no property with the given ID is found.
      */
-    property: async (
-      _: unknown,
-      args: { id: string },
-      context: GraphQLContext
-    ): Promise<Property | null> => {
+    property: async (_, args, context) => {
       const { prisma: prismaClient } = context;
       const property = await findPropertyById(prismaClient, args.id);
       if (!property)
@@ -81,18 +77,7 @@ export const propertyResolvers = {
      * @returns A promise that resolves to the newly created property.
      * @throws {GraphQLError} If a property with the same address already exists.
      */
-    createProperty: async (
-      _: unknown,
-      args: {
-        input: {
-          city: string;
-          street: string;
-          state: string;
-          zipCode: string;
-        };
-      },
-      context: GraphQLContext
-    ): Promise<Property> => {
+    createProperty: async (_, args, context) => {
       const { prisma: prismaClient, weatherstackClient } = context;
       const { input } = args;
       const { city, state, zipCode, street } = input;
@@ -108,7 +93,7 @@ export const propertyResolvers = {
 
       const weatherData = weather.current as Prisma.InputJsonValue;
 
-      const property = await createPropertyRecord(prismaClient, {
+      const data = {
         city,
         street,
         state,
@@ -116,7 +101,9 @@ export const propertyResolvers = {
         lat,
         long,
         weatherData,
-      });
+      };
+
+      const property = await createPropertyRecord(prismaClient, data);
 
       if (!property) {
         throw new GraphQLError("Property already exists", {
@@ -135,11 +122,7 @@ export const propertyResolvers = {
      * @returns A promise that resolves to `true` if the deletion was successful.
      * @throws {GraphQLError} If no property with the given ID is found to be deleted.
      */
-    deleteProperty: async (
-      _: unknown,
-      args: { id: string },
-      context: GraphQLContext
-    ): Promise<boolean> => {
+    deleteProperty: async (_, args, context) => {
       const { prisma: prismaClient } = context;
       const isDeleted = await deletePropertyById(prismaClient, args.id);
       if (!isDeleted)
