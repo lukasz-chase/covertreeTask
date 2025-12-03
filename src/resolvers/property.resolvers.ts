@@ -1,4 +1,4 @@
-import { Prisma, Property } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { GraphQLError } from "graphql";
 import GraphQLJSON from "graphql-type-json";
 import { DateTimeResolver } from "graphql-scalars";

@@ -3,3 +3,4 @@ node_modules
 prisma/dev.db
 *.db
 dist
+tests/graphql/_snapshots_
