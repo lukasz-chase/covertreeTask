@@ -1,15 +1,11 @@
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-import { GraphQLError } from "graphql";
 import {
   propertyResolvers,
   GraphQLContext,
 } from "../../resolvers/property.resolvers";
 import { mockPrisma, mockWeatherstack } from "../helpers/mockContext";
-
-// 🔹 importujemy całe repo, żeby móc je zamockować
 import * as propertyRepo from "../../repositories/property.repository";
 
-// 🔹 zamieniamy moduł repo na mocka Jesta
 jest.mock("../../repositories/property.repository");
 
 const repoMock = propertyRepo as jest.Mocked<typeof propertyRepo>;
@@ -24,14 +20,10 @@ describe("propertyResolvers", () => {
     jest.resetAllMocks();
   });
 
-  // -------------------------------------------------------
-  // QUERY: properties
-  // -------------------------------------------------------
   describe("Query.properties", () => {
-    it("deleguje do findProperties z poprawnym filtrem i sortOrder", async () => {
+    it("should call findProperties with filter and sortOrder and return the result", async () => {
       const ctx = makeContext();
 
-      // co ma zwrócić repo
       const fakeList = [
         {
           id: "1",
@@ -48,17 +40,15 @@ describe("propertyResolvers", () => {
 
       repoMock.findProperties.mockResolvedValue(fakeList as any);
 
-      // UWAGA: przez typy z codegena (Resolver | { resolve }) robimy cast na any
       const resolver = propertyResolvers.Query!.properties as any;
 
       const result = await resolver(
-        {}, // parent
-        { filter: { city: "NY" }, sortOrder: "ASC" }, // args
+        {},
+        { filter: { city: "NY" }, sortOrder: "ASC" },
         ctx,
-        {} as any // info
+        {} as any
       );
 
-      // sprawdzamy, że repo wołane z odpowiednio zmapowanym filtrem
       expect(repoMock.findProperties).toHaveBeenCalledWith(ctx.prisma, {
         filter: { city: "NY", state: undefined, zipCode: undefined },
         sortOrder: "ASC",
@@ -67,7 +57,7 @@ describe("propertyResolvers", () => {
       expect(result).toEqual(fakeList);
     });
 
-    it("przekazuje filter = undefined, gdy brak filter w args", async () => {
+    it("should pass filter as undefined when it is not in args", async () => {
       const ctx = makeContext();
 
       repoMock.findProperties.mockResolvedValue([] as any);
@@ -83,11 +73,8 @@ describe("propertyResolvers", () => {
     });
   });
 
-  // -------------------------------------------------------
-  // QUERY: property
-  // -------------------------------------------------------
   describe("Query.property", () => {
-    it("zwraca pojedynczą nieruchomość gdy istnieje", async () => {
+    it("should return a single property when it exists", async () => {
       const ctx = makeContext();
 
       const fake = {
@@ -112,7 +99,7 @@ describe("propertyResolvers", () => {
       expect(result).toEqual(fake);
     });
 
-    it("rzuca NOT_FOUND gdy nieruchomość nie istnieje", async () => {
+    it("should throw NOT_FOUND when the property does not exist", async () => {
       const ctx = makeContext();
 
       repoMock.findPropertyById.mockResolvedValue(null);
@@ -128,11 +115,8 @@ describe("propertyResolvers", () => {
     });
   });
 
-  // -------------------------------------------------------
-  // MUTATION: createProperty
-  // -------------------------------------------------------
   describe("Mutation.createProperty", () => {
-    it("pobiera pogodę, tworzy property i zwraca ją", async () => {
+    it("should fetch weather, create a property, and return it", async () => {
       const ctx = makeContext();
 
       mockWeatherstack.getCurrentWeather.mockResolvedValue({
@@ -199,7 +183,7 @@ describe("propertyResolvers", () => {
       expect(result).toEqual(created);
     });
 
-    it("rzuca ALREADY_EXISTS gdy repo zwróci null", async () => {
+    it("should throw ALREADY_EXISTS when the repository returns null", async () => {
       const ctx = makeContext();
 
       mockWeatherstack.getCurrentWeather.mockResolvedValue({
@@ -237,11 +221,8 @@ describe("propertyResolvers", () => {
     });
   });
 
-  // -------------------------------------------------------
-  // MUTATION: deleteProperty
-  // -------------------------------------------------------
   describe("Mutation.deleteProperty", () => {
-    it("zwraca true gdy deletePropertyById zwróci true", async () => {
+    it("should return true when deletePropertyById returns true", async () => {
       const ctx = makeContext();
 
       repoMock.deletePropertyById.mockResolvedValue(true);
@@ -257,7 +238,7 @@ describe("propertyResolvers", () => {
       expect(result).toBe(true);
     });
 
-    it("rzuca NOT_FOUND gdy deletePropertyById zwróci false", async () => {
+    it("should throw NOT_FOUND when deletePropertyById returns false", async () => {
       const ctx = makeContext();
 
       repoMock.deletePropertyById.mockResolvedValue(false);

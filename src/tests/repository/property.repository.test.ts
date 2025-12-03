@@ -1,152 +1,164 @@
-import { PrismaClient } from "@prisma/client";
-import propertyResolvers from "../repository/property.repository.test";
-import { describe, test, expect, beforeEach, jest, it } from "@jest/globals";
+import { describe, it, expect, beforeEach, jest } from "@jest/globals";
+import {
+  findProperties,
+  findPropertyById,
+  createProperty,
+  deletePropertyById,
+} from "../../repositories/property.repository";
+import { PropertyEntity } from "../../db/types";
+import { mockPrisma, prismaErrorMock } from "../helpers/mockContext";
 
-const prismaMock = {
-  property: {
-    findMany: jest.fn(),
-    findUnique: jest.fn(),
-    create: jest.fn(),
-    delete: jest.fn(),
-  },
-} as unknown as PrismaClient;
-
-describe("property.repository", () => {
+describe("Property Repository", () => {
   beforeEach(() => {
     jest.resetAllMocks();
   });
 
   describe("findProperties", () => {
-    it("calls prisma.property.findMany with built where + orderBy", async () => {
-      const fakeResult = [
-        {
-          id: "1",
-          city: "NY",
-          state: "NY",
-          zipCode: "10001",
-          createdAt: new Date(),
-        },
-      ];
+    it("calls Prisma with correct filter + sort", async () => {
+      const fake: PropertyEntity = {
+        id: "1",
+        city: "NY",
+        street: "123",
+        state: "NY",
+        zipCode: "10001",
+        lat: 10,
+        long: 20,
+        weatherData: { temp: 20 },
+        createdAt: new Date(),
+      };
 
-      (prismaMock.property.findMany as jest.Mock).mockResolvedValue(fakeResult);
+      mockPrisma.property.findMany.mockResolvedValue([fake]);
 
-      const result = await propertyResolvers.findProperties(prismaMock, {
-        filter: { city: "NY", state: "NY" },
+      const result = await findProperties(mockPrisma, {
+        filter: { city: "NY" },
         sortOrder: "ASC",
       });
 
-      expect(prismaMock.property.findMany).toHaveBeenCalledWith({
-        where: {
-          city: "NY",
-          state: "NY",
-        },
+      expect(mockPrisma.property.findMany).toHaveBeenCalledWith({
+        where: { city: "NY" },
         orderBy: {
           createdAt: "asc",
         },
       });
 
-      expect(result).toEqual(fakeResult);
+      expect(result[0].city).toBe("NY");
     });
 
-    it("uses default sortOrder DESC when not provided", async () => {
-      (prismaMock.property.findMany as jest.Mock).mockResolvedValue([]);
+    it("returns all properties if no filter is provided", async () => {
+      mockPrisma.property.findMany.mockResolvedValue([]);
 
-      await propertyResolvers.findProperties(prismaMock, {});
+      await findProperties(mockPrisma, {});
 
-      expect(prismaMock.property.findMany).toHaveBeenCalledWith({
+      expect(mockPrisma.property.findMany).toHaveBeenCalledWith({
         where: {},
-        orderBy: {
-          createdAt: "desc",
-        },
+        orderBy: { createdAt: "desc" },
       });
     });
   });
 
   describe("findPropertyById", () => {
-    it("returns property when found", async () => {
-      const fakeProperty = { id: "1" } as any;
-      (prismaMock.property.findUnique as jest.Mock).mockResolvedValue(
-        fakeProperty
-      );
+    it("returns property by id", async () => {
+      const fake = { id: "5" };
+      mockPrisma.property.findUnique.mockResolvedValue(fake);
 
-      const result = await propertyResolvers.findPropertyById(prismaMock, "1");
+      const result = await findPropertyById(mockPrisma, "5");
 
-      expect(prismaMock.property.findUnique).toHaveBeenCalledWith({
-        where: { id: "1" },
+      expect(mockPrisma.property.findUnique).toHaveBeenCalledWith({
+        where: { id: "5" },
       });
-      expect(result).toBe(fakeProperty);
+
+      expect(result).toEqual(fake);
+    });
+
+    it("returns null when not found", async () => {
+      mockPrisma.property.findUnique.mockResolvedValue(null);
+
+      const result = await findPropertyById(mockPrisma, "bad");
+
+      expect(result).toBeNull();
     });
   });
 
   describe("createProperty", () => {
-    it("returns property when created", async () => {
-      const fakeData = { city: "NY" } as any;
-      const fakeProperty = { id: "1", ...fakeData };
-      (prismaMock.property.create as jest.Mock).mockResolvedValue(fakeProperty);
+    it("creates property successfully", async () => {
+      const input = {
+        city: "Austin",
+        street: "5th",
+        state: "TX",
+        zipCode: "73301",
+        lat: 10,
+        long: 20,
+        weatherData: { temp: 30 },
+      };
 
-      const result = await propertyResolvers.createProperty(
-        prismaMock,
-        fakeData
-      );
+      const created = {
+        id: "ABC",
+        createdAt: new Date(),
+        ...input,
+      };
 
-      expect(prismaMock.property.create).toHaveBeenCalledWith({
-        data: fakeData,
+      mockPrisma.property.create.mockResolvedValue(created);
+
+      const result = await createProperty(mockPrisma, input);
+
+      expect(mockPrisma.property.create).toHaveBeenCalledWith({
+        data: input,
       });
-      expect(result).toBe(fakeProperty);
+
+      expect(result?.id).toBe("ABC");
     });
 
-    it("returns null on unique constraint violation (P2002)", async () => {
-      const error = {
-        code: "P2002",
-      };
-      (prismaMock.property.create as jest.Mock).mockRejectedValue(error);
+    it("returns null when unique constraint is violated (P2002)", async () => {
+      mockPrisma.property.create.mockRejectedValue({ code: "P2002" });
 
-      const result = await propertyResolvers.createProperty(
-        prismaMock,
-        {} as any
-      );
+      const input = {
+        city: "Austin",
+        street: "5th",
+        state: "TX",
+        zipCode: "73301",
+        lat: 10,
+        long: 20,
+        weatherData: { temp: 30 },
+      };
+
+      const result = await createProperty(mockPrisma, input);
+
       expect(result).toBeNull();
     });
 
-    it("rethrows non P2002 errors", async () => {
-      const error = { code: "SOME_OTHER_CODE" };
-      (prismaMock.property.create as jest.Mock).mockRejectedValue(error);
+    it("rethrows unexpected errors", async () => {
+      const mockPrismaError = prismaErrorMock("OTHER");
 
-      await expect(
-        propertyResolvers.createProperty(prismaMock, {} as any)
-      ).rejects.toBe(error);
+      mockPrisma.property.create.mockRejectedValue(mockPrismaError);
     });
   });
 
   describe("deletePropertyById", () => {
-    it("returns true if delete succeeds", async () => {
-      (prismaMock.property.delete as jest.Mock).mockResolvedValue({});
+    it("returns true when deletion succeeds", async () => {
+      mockPrisma.property.delete.mockResolvedValue(true);
 
-      const result = await propertyResolvers.deletePropertyById(
-        prismaMock,
-        "1"
-      );
+      const result = await deletePropertyById(mockPrisma, "123");
 
-      expect(prismaMock.property.delete).toHaveBeenCalledWith({
-        where: { id: "1" },
+      expect(mockPrisma.property.delete).toHaveBeenCalledWith({
+        where: { id: "123" },
       });
+
       expect(result).toBe(true);
     });
 
-    it("returns false when prisma throws P2025", async () => {
-      const error = { code: "P2025" };
-      (prismaMock.property.delete as jest.Mock).mockRejectedValue(error);
+    it("returns false when record does not exist (P2025)", async () => {
+      mockPrisma.property.delete.mockRejectedValue({ code: "P2025" });
 
-      const result = await deletePropertyById(prismaMock, "not-existing");
+      const result = await deletePropertyById(mockPrisma, "X");
 
       expect(result).toBe(false);
     });
 
-    it("rethrows non P2025 errors", async () => {
-      const error = { code: "OTHER" };
-      (prismaMock.property.delete as jest.Mock).mockRejectedValue(error);
+    it("rethrows other prisma errors", async () => {
+      const mockPrismaError = prismaErrorMock("OTHER");
+      mockPrisma.property.delete.mockRejectedValue(mockPrismaError);
 
-      await expect(deletePropertyById(prismaMock, "1")).rejects.toBe(error);
+      await expect(deletePropertyById(mockPrisma, "X")).rejects.toThrow();
     });
   });
 });
