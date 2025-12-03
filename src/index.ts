@@ -1,11 +1,11 @@
+import { ApolloServer } from "@apollo/server";
+import { startStandaloneServer } from "@apollo/server/standalone";
 import { typeDefs } from "./schema";
 import { resolvers } from "./resolvers";
 import { prisma } from "./db/client";
 import { env } from "./config/env";
 import { createWeatherstackClient } from "./services/weatherstack";
 import { GraphQLContext } from "./resolvers/property.resolvers";
-import { ApolloServer } from "@apollo/server";
-import { startStandaloneServer } from "@apollo/server/standalone";
 
 const weatherstackClient = createWeatherstackClient(env.weatherstackApiKey);
 
@@ -19,13 +19,9 @@ const server = new ApolloServer<GraphQLContext>({
   resolvers,
 });
 
-const startApolloServer = async () => {
-  const { url } = await startStandaloneServer(server, {
-    listen: { port: 4000 },
-    context: async () => createContext(),
-  });
+const { url } = await startStandaloneServer(server, {
+  listen: { port: 4000 },
+  context: async () => createContext(),
+});
 
-  console.log(`🚀 Server listening at: ${url}`);
-};
-
-startApolloServer();
+console.log(`🚀 Server listening at: ${url}`);
