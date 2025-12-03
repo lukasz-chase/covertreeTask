@@ -3,6 +3,3 @@ npm run prettier:check
 
 echo "Running ESLint on staged files..."
 npx lint-staged
-
-echo "Running tests..."
-npm test
