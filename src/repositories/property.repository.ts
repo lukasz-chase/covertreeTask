@@ -12,7 +12,7 @@ import {
  * @returns A `Prisma.PropertyWhereInput` object for use in Prisma queries.
  */
 const buildWhereClause = (
-  filter?: PropertyFilter
+  filter?: PropertyFilter,
 ): Prisma.PropertyWhereInput => {
   if (!filter) {
     return {};
@@ -53,7 +53,7 @@ export const findProperties = async (
   args: {
     filter?: PropertyFilter;
     sortOrder?: SortOrder;
-  }
+  },
 ): Promise<PropertyEntity[]> => {
   const { filter, sortOrder = "DESC" } = args;
   const where = buildWhereClause(filter);
@@ -74,7 +74,7 @@ export const findProperties = async (
  */
 export const findPropertyById = async (
   prisma: PrismaClient,
-  id: string
+  id: string,
 ): Promise<PropertyEntity | null> => {
   return prisma.property.findUnique({
     where: { id },
@@ -90,7 +90,7 @@ export const findPropertyById = async (
  */
 export const createProperty = async (
   prisma: PrismaClient,
-  data: CreatePropertyData
+  data: CreatePropertyData,
 ): Promise<PropertyEntity | null> => {
   try {
     const property = await prisma.property.create({
@@ -118,7 +118,7 @@ export const createProperty = async (
  */
 export const deletePropertyById = async (
   prisma: PrismaClient,
-  id: string
+  id: string,
 ): Promise<boolean> => {
   try {
     await prisma.property.delete({

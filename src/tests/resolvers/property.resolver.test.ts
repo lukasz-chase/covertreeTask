@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-import { propertyResolvers, GraphQLContext } from "../../resolvers/property.resolvers";
+import {
+  propertyResolvers,
+  GraphQLContext,
+} from "../../resolvers/property.resolvers";
 import { mockPrisma, mockWeatherstack } from "../helpers/mockContext";
 import * as propertyRepo from "../../repositories/property.repository";
 
@@ -103,7 +106,9 @@ describe("propertyResolvers", () => {
 
       const resolver = propertyResolvers.Query!.property as any;
 
-      await expect(resolver({}, { id: "X" }, ctx, {} as any)).rejects.toMatchObject({
+      await expect(
+        resolver({}, { id: "X" }, ctx, {} as any),
+      ).rejects.toMatchObject({
         message: "Property with id X not found",
         extensions: { code: "NOT_FOUND" },
       });
@@ -226,7 +231,10 @@ describe("propertyResolvers", () => {
 
       const result = await resolver({}, { id: "123" }, ctx, {} as any);
 
-      expect(repoMock.deletePropertyById).toHaveBeenCalledWith(ctx.prisma, "123");
+      expect(repoMock.deletePropertyById).toHaveBeenCalledWith(
+        ctx.prisma,
+        "123",
+      );
       expect(result).toBe(true);
     });
 
@@ -237,7 +245,9 @@ describe("propertyResolvers", () => {
 
       const resolver = propertyResolvers.Mutation!.deleteProperty as any;
 
-      await expect(resolver({}, { id: "X" }, ctx, {} as any)).rejects.toMatchObject({
+      await expect(
+        resolver({}, { id: "X" }, ctx, {} as any),
+      ).rejects.toMatchObject({
         message: "Property with id X not found",
         extensions: { code: "NOT_FOUND" },
       });

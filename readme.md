@@ -146,7 +146,12 @@ query GetPropertyDetails {
 ```graphql
 mutation CreateProperty {
   createProperty(
-    input: { city: "Cheyenne", street: "6020 Yellowstone Road", state: "WY", zipCode: "82009" }
+    input: {
+      city: "Cheyenne"
+      street: "6020 Yellowstone Road"
+      state: "WY"
+      zipCode: "82009"
+    }
   ) {
     id
     city

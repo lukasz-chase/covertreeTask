@@ -58,7 +58,7 @@ export const createWeatherstackClient = (apiKey: string) => {
    * @returns A promise that resolves with the weather data from the API.
    */
   const getCurrentWeather = async (
-    address: AddressInput
+    address: AddressInput,
   ): Promise<WeatherstackResponse> => {
     const query = `${address.zipCode} ${address.city}, ${address.state}, USA`;
 
@@ -69,7 +69,7 @@ export const createWeatherstackClient = (apiKey: string) => {
           access_key: apiKey,
           query,
         },
-      }
+      },
     );
     const error = response.data.error;
     if (error) {
