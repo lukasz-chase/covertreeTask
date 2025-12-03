@@ -1,4 +1,3 @@
-
 # Covertree Task: Backend Application
 
 This document outlines the setup instructions and API usage for the backend application.
@@ -81,6 +80,7 @@ query GetPropertiesSortedDesc {
 ### 2.3. Story 3: Filter by City, State, and Zip Code
 
 **Filter by State:**
+
 ```graphql
 query GetPropertiesInWA {
   properties(filter: { state: "WA" }) {
@@ -94,6 +94,7 @@ query GetPropertiesInWA {
 ```
 
 **Filter by City:**
+
 ```graphql
 query GetPropertiesInAuburn {
   properties(filter: { city: "Auburn" }) {
@@ -107,6 +108,7 @@ query GetPropertiesInAuburn {
 ```
 
 **Filter by Zip Code:**
+
 ```graphql
 query GetPropertiesByZip {
   properties(filter: { zipCode: "98001" }) {
@@ -144,12 +146,7 @@ query GetPropertyDetails {
 ```graphql
 mutation CreateProperty {
   createProperty(
-    input: {
-      city: "Cheyenne"
-      street: "6020 Yellowstone Road"
-      state: "WY"
-      zipCode: "82009"
-    }
+    input: { city: "Cheyenne", street: "6020 Yellowstone Road", state: "WY", zipCode: "82009" }
   ) {
     id
     city

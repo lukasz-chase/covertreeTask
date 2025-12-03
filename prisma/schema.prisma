@@ -16,6 +16,6 @@ model Property {
   lat         Float
   long        Float
   createdAt   DateTime @default(now())
-  
+
   @@unique([street, city, state, zipCode])
 }

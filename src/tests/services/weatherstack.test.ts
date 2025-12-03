@@ -63,7 +63,7 @@ describe("WeatherstackClient", () => {
           city: "Austin",
           state: "TX",
           zipCode: "73301",
-        })
+        }),
       ).rejects.toThrow("Invalid API request");
     });
   });
@@ -92,7 +92,7 @@ describe("WeatherstackClient", () => {
           region: "Texas",
           lat: "ABC",
           lon: "XYZ",
-        })
+        }),
       ).toThrow("Weatherstack returned invalid lat/lon values");
     });
   });
